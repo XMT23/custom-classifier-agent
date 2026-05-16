@@ -1,13 +1,31 @@
 __authors__ = ["1748951", "1755033", "1703660"]
 __group__ = "11"
 
-from quant_analysis import kmeans_stats, get_shape_accuracy, get_color_accuracy
-from utils_data import *
-from Kmeans import KMeanOptions, KMeans, get_colors
-from KNN import *
+# from quant_analysis import kmeans_stats, get_shape_accuracy, get_color_accuracy
+# from Kmeans import KMeanOptions, KMeans, get_colors
+# from KNN import *
 import numpy as np
+from src import *
 
 if __name__ == "__main__":
+    (
+        train_imgs,
+        train_class_labels,
+        train_color_labels,
+        test_imgs,
+        test_class_labels,
+        test_color_labels,
+    ) = read_dataset(root_folder="./data/raw/images/", gt_json="./data/raw/images/gt.json")
+
+    opts = ShapeLabelerOptions(apply_gray_transform=False, distance_fn=MANHATTAN_METRIC)
+    labeler = ShapeLabeler(train_imgs, train_class_labels, opts)
+    predicted = labeler.predict(test_imgs, k=1)
+
+    correct = np.sum(predicted == test_class_labels)
+    print(f"Accuracy: {correct}/{len(test_class_labels)} = {correct / len(test_class_labels)}")
+    exit()
+
+if __name__ == "__main2__":
 
     # Load all the images and GT
     (
@@ -17,7 +35,7 @@ if __name__ == "__main__":
         test_imgs,
         test_class_labels,
         test_color_labels,
-    ) = read_dataset(root_folder="./images/", gt_json="./images/gt.json")
+    ) = read_dataset(root_folder="./data/raw/images/", gt_json="./data/raw/images/gt.json")
 
     # List with all the existent classes
     classes = list(set(list(train_class_labels) + list(test_class_labels)))

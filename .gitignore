@@ -1,5 +1,7 @@
-images/
-test/
 __pycache__/
-.env
 venv/
+.env
+
+doc-guidelines/
+data/
+test/
