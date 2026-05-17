@@ -38,10 +38,6 @@ class KMeans:
                 f"best_k_tolerance must be between 0 and 1 (got {self.best_k_tolerance})"
             )
 
-    #############################################################
-    ##  THIS FUNCTION CAN BE MODIFIED FROM THIS POINT, if needed
-    #############################################################
-
     def _init_X(self, X: np.ndarray | list):
         """Initialization of all pixels, sets X as an array of data in vector form (PxD)
         Args:
@@ -49,10 +45,6 @@ class KMeans:
                 if matrix has more than 2 dimensions, the dimensionality of the sample space is the length of
                 the last dimension
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
         X = np.array(X, dtype=np.float64)
 
         if X.ndim == 3:
@@ -173,10 +165,6 @@ class KMeans:
         returns the within class distance of the current clustering
         """
 
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
         pixel_centroids = self.centroids[self.labels]
         self.WCD = np.sum((self.X - pixel_centroids) ** 2) / self.X.shape[0]
         return self.WCD
@@ -350,11 +338,6 @@ def distance(X: np.ndarray, C: np.ndarray) -> np.ndarray:
         de la llibreria implementada en C.
     """
 
-    #########################################################
-    ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-    ##  AND CHANGE FOR YOUR OWN CODE
-    #########################################################
-
     diff = X[:, None, :] - C[None, :, :]
     return np.sqrt(np.sum(diff**2, axis=-1))
 
@@ -368,11 +351,6 @@ def get_colors(centroids: np.ndarray):
     Returns:
         labels: list of K labels corresponding to one of the 11 basic colors
     """
-
-    #########################################################
-    ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-    ##  AND CHANGE FOR YOUR OWN CODE
-    #########################################################
     probs = get_color_prob(centroids)
     idxs = np.argmax(probs, axis=1)
     return colors[idxs]
