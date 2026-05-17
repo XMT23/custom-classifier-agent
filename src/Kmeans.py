@@ -273,6 +273,7 @@ class KMeans:
                 if last_metric is not None:
                     if last_metric == 0 or (1 - metric / last_metric) < tolerance:
                         self.K = K - 1
+                        self.fit()
                         return
 
             elif fitting == "ICD":
@@ -282,6 +283,7 @@ class KMeans:
                 if last_metric is not None and last_metric > 0:
                     if (metric / last_metric - 1) < tolerance:
                         self.K = K - 1
+                        self.fit()
                         return
 
             elif fitting == "FISHER":
@@ -291,6 +293,7 @@ class KMeans:
                 if last_metric is not None and last_metric > 0:
                     if (metric / last_metric - 1) < tolerance:
                         self.K = K - 1
+                        self.fit()
                         return
             else:
                 raise ValueError(

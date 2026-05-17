@@ -4,6 +4,7 @@ import numpy as np
 
 from src import __authors__, __group__, KMeans, distance, get_colors
 
+
 class TestCases(unittest.TestCase):
 
     def setUp(self):

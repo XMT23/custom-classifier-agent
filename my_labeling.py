@@ -1,97 +1,15 @@
 __authors__ = ["1748951", "1755033", "1703660"]
 __group__ = "11"
 
-# from quant_analysis import kmeans_stats, get_shape_accuracy, get_color_accuracy
-# from Kmeans import KMeanOptions, KMeans, get_colors
-# from KNN import *
 import numpy as np
 
 from src import *
-
-if __name__ == "__main__":
-    (
-        train_imgs,
-        train_class_labels,
-        train_color_labels,
-        test_imgs,
-        test_class_labels,
-        test_color_labels,
-    ) = read_dataset(
-        root_folder="./data/raw/images/", gt_json="./data/raw/images/gt.json"
-    )
-
-    opts = ColorExtractorOptions(
-        km_init="first",
-        fitting="WCD",
-        tolerance=0.001,
-        best_k_tolerance=0.3,
-        use_cropped_images=True,
-    )
-    color_extractor = ColorExtractor(opts)
-    colors_database = color_extractor.extract_dominant_colors()
-    imgs, class_labels, color_labels, upper, lower, background = read_extended_dataset(
-        root_folder="./data/raw/images",
-        extended_gt_json="./data/raw/images/gt_reduced.json",
-    )
-
-    for i, colors in enumerate(colors_database):
-        print(f"Colors extracted: {colors} - ground truth: {test_color_labels[i]}")
-
-    accuracy = get_color_accuracy(colors_database, color_labels)
-
-    exit()
-
-if __name__ == "__main2__":
-    # Load all the images and GT
-    (
-        train_imgs,
-        train_class_labels,
-        train_color_labels,
-        test_imgs,
-        test_class_labels,
-        test_color_labels,
-    ) = read_dataset(
-        root_folder="./data/raw/images/", gt_json="./data/raw/images/gt.json"
-    )
-
-    # List with all the existent classes
-    classes = list(set(list(train_class_labels) + list(test_class_labels)))
-
-    # Load extended ground truth
-    imgs, class_labels, color_labels, upper, lower, background = read_extended_dataset()
-    cropped_images = crop_images(imgs, upper, lower)
-
-    # Convertim a gris per KNN
-    train_imgs_gray = np.mean(train_imgs, axis=3).astype(float)
-    test_imgs_gray = np.mean(test_imgs, axis=3).astype(float)
-
-    # You can start coding your functions here
-    # kmeans_stats(train_imgs, 8)
-
-    # knn = KNN(train_imgs_gray, train_class_labels)
-    # predicted_shapes = knn.predict(test_imgs_gray, k=5)
-    # get_shape_accuracy(predicted_shapes, test_class_labels)
-
-    predicted_colors = []
-    for img in cropped_images:
-        pixels = img.reshape(-1, 3).astype(float)
-        kmeans_options = KMeanOptions(
-            km_init="random", tolerance=0.001, fitting="ELBOW"
-        )
-        km = KMeans(pixels, K=1, options=kmeans_options)
-        km.find_bestK(5)
-        km.fit()
-        predicted_colors.append(list(set(get_colors(km.centroids))))
-    # Notese que en usar las cropped, la accuract subio de un 32 a un 59!
-    get_color_accuracy(predicted_colors, color_labels)
-
-    exit()
+from src.quant_analysis import get_shape_accuracy
 
 ## FUNCIONS D'ANÀLISI QUALITATIU
 
+
 ## FUNCIÓ 1: RETRIEVAL_BY_COLOR (busquem peces de roba del mateix color)
-
-
 def Retrieval_by_color(llista_imatges, etiquetes, query, percentatges=False):
     resultat = []
     percent = []
@@ -163,14 +81,6 @@ def Retrieval_by_shape(llista_imatges, etiquetes, query, neighbours=None, k=5):
 
     return resultat
 
-    # Passem les imatges en gris pel init del KNN. Si les passesim a color cada imatge ocuparia 60x80x3=14400 pixels en comptes de 60x80=4800
-
-    peces_trobades = Retrieval_by_shape(
-        test_imgs, predicted_shape_labels, "Shirts", neighbours=knn.neighbors, k=5
-    )
-
-    # FUNCIÓ 3:
-
 
 def Retrieval_combined(
     llista_imatges, et_color, et_shape, color_query, shape_query, percentatges=False
@@ -211,11 +121,120 @@ def Retrieval_combined(
     return resultat
 
 
-Retrieval_combined(
-    test_imgs,
-    test_color_labels,
-    predicted_shape_labels,
-    "Black",
-    "Sandals",
-    percentatges=True,
-)
+if __name__ == "__main__":
+    (
+        train_imgs,
+        train_class_labels,
+        train_color_labels,
+        test_imgs,
+        test_class_labels,
+        test_color_labels,
+    ) = read_dataset(
+        root_folder="./data/raw/images/", gt_json="./data/raw/images/gt.json"
+    )
+
+    imgs, class_labels, color_labels, upper, lower, background = read_extended_dataset(
+        root_folder="./data/raw/images",
+        extended_gt_json="./data/raw/images/gt_reduced.json",
+    )
+
+    cropped = crop_images(imgs, upper, lower)
+
+    print("[1/3] Running Color Extractor in test set")
+    opts_color = ColorExtractorOptions(
+        km_init="custom",
+        fitting="FISHER",
+        tolerance=0.0,
+        max_iter=1000,
+        max_K=3,
+        best_k_tolerance=0.2,
+        use_cropped_images=False,
+        skin_filter=True,
+    )
+    color_extractor = ColorExtractor(opts_color)
+    predicted_color_labels = color_extractor.extract_dominant_colors(test_imgs)
+    color_accuracy = get_color_accuracy(predicted_color_labels, test_color_labels)
+    print(f"-> Accuracy color extractor: {color_accuracy}%")
+
+    print("\n[2/3] Training Shape Labeler and classifying clothes")
+    opts_shape = ShapeLabelerOptions(
+        apply_gray_transform=True, distance_fn=MANHATTAN_METRIC
+    )
+    labeler = ShapeLabeler(train_imgs, train_class_labels, opts_shape)
+    predicted_shape_labels = labeler.predict(test_imgs, k=3)
+    knn_instance = labeler._knn
+    shape_accuracy = get_shape_accuracy(predicted_shape_labels, test_class_labels)
+
+    print("\n[3/3] Running query system")
+    while True:
+        print("\n" + "=" * 50)
+        print("\t\tSearch Engine")
+        print("=" * 50)
+        print("1. Search by Color")
+        print("2. Search by Cloth type (Shape)")
+        print("3. Search combined")
+        print("4. Exit")
+        print("=" * 50)
+
+        option = input("Select an option (1-4): ").strip()
+
+        match option:
+            case "1":
+                print("\n--- Search by Color ---")
+                print(
+                    "Avalaible colors: Black, White, Red, Blue, Green, Yellow, Gray, Pink, Purple, Orange, Brown"
+                )
+                query_color = input(
+                    "Enter desired color/s (for multiple, separate by commas): "
+                ).strip()
+
+                if query_color:
+                    color_list = [
+                        c.strip().capitalize() for c in query_color.split(",")
+                    ]
+                    print(f"\nSearching for clothes with color/s: {color_list}...")
+                    _ = Retrieval_by_color(
+                        test_imgs, predicted_color_labels, color_list, percentatges=True
+                    )
+
+            case "2":
+                print("\n--- Search by Shape ---")
+                print(
+                    "Avalaible shapes: Dresses, Flip Flops, Jeans, Sandals, Shirts, Shorts, Socks, Handbags"
+                )
+                query_shape = input("Enter desired shape: ").strip().title()
+
+                if query_shape:
+                    print(f"\nSearching for clothes with shape: {query_shape}...")
+                    _ = Retrieval_by_shape(
+                        test_imgs,
+                        predicted_shape_labels,
+                        query_shape,
+                        neighbours=knn_instance.neighbors,
+                        k=3,
+                    )
+
+            case "3":
+                print("\n--- Combined Search ---")
+                query_color = input(
+                    "Enter desired color/s (for multiple, separate by commas): "
+                ).strip()
+                query_shape = input("Enter desired shape: ").strip().title()
+
+                if query_color and query_shape:
+                    color_list = [
+                        c.strip().capitalize() for c in query_color.split(",")
+                    ]
+                    _ = Retrieval_combined(
+                        test_imgs,
+                        predicted_color_labels,
+                        predicted_shape_labels,
+                        color_list,
+                        query_shape,
+                        percentatges=True,
+                    )
+            case "4":
+                print("\nThank you for using the clothes search engine! Exiting...")
+                break
+            case _:
+                print("Invalid option. Please, enter a number from 1 to 4")

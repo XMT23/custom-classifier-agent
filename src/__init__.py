@@ -9,7 +9,12 @@ from .KNN import (
 )
 from .Kmeans import KMeans, distance, get_colors
 from .ShapeLabeler import ShapeLabeler, ShapeLabelerOptions
-from .utils_data import crop_images, read_dataset, read_extended_dataset
+from .utils_data import (
+    crop_images,
+    read_dataset,
+    read_extended_dataset,
+    visualize_retrieval,
+)
 from .quant_analysis import get_color_accuracy
 
 __all__ = [
@@ -27,6 +32,7 @@ __all__ = [
     "ColorExtractorOptions",
     "read_dataset",
     "read_extended_dataset",
+    "visualize_retrieval",
     "crop_images",
     "get_color_accuracy",
 ]
