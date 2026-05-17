@@ -5,6 +5,7 @@ __group__ = "11"
 # from Kmeans import KMeanOptions, KMeans, get_colors
 # from KNN import *
 import numpy as np
+
 from src import *
 
 if __name__ == "__main__":
@@ -15,18 +16,31 @@ if __name__ == "__main__":
         test_imgs,
         test_class_labels,
         test_color_labels,
-    ) = read_dataset(root_folder="./data/raw/images/", gt_json="./data/raw/images/gt.json")
+    ) = read_dataset(
+        root_folder="./data/raw/images/", gt_json="./data/raw/images/gt.json"
+    )
 
-    opts = ShapeLabelerOptions(apply_gray_transform=False, distance_fn=MANHATTAN_METRIC)
-    labeler = ShapeLabeler(train_imgs, train_class_labels, opts)
-    predicted = labeler.predict(test_imgs, k=1)
+    opts = ColorExtractorOptions(
+        km_init="first",
+        fitting="WCD",
+        tolerance=0.001,
+        best_k_tolerance=0.3,
+        use_cropped_images=True,
+    )
+    color_extractor = ColorExtractor(opts)
+    colors_database = color_extractor.extract_dominant_colors()
+    imgs, class_labels, color_labels, upper, lower, background = read_extended_dataset(
+        root_folder="./data/raw/images", extended_gt_json="./data/raw/images/gt_reduced.json"
+            )
 
-    correct = np.sum(predicted == test_class_labels)
-    print(f"Accuracy: {correct}/{len(test_class_labels)} = {correct / len(test_class_labels)}")
+    for i, colors in enumerate(colors_database):
+        print(f"Colors extracted: {colors} - ground truth: {test_color_labels[i]}")
+
+    accuracy = get_color_accuracy(colors_database, color_labels)
+
     exit()
 
 if __name__ == "__main2__":
-
     # Load all the images and GT
     (
         train_imgs,
@@ -35,7 +49,9 @@ if __name__ == "__main2__":
         test_imgs,
         test_class_labels,
         test_color_labels,
-    ) = read_dataset(root_folder="./data/raw/images/", gt_json="./data/raw/images/gt.json")
+    ) = read_dataset(
+        root_folder="./data/raw/images/", gt_json="./data/raw/images/gt.json"
+    )
 
     # List with all the existent classes
     classes = list(set(list(train_class_labels) + list(test_class_labels)))
@@ -58,7 +74,9 @@ if __name__ == "__main2__":
     predicted_colors = []
     for img in cropped_images:
         pixels = img.reshape(-1, 3).astype(float)
-        kmeans_options = KMeanOptions(km_init="random", tolerance=0.001, fitting="ELBOW")
+        kmeans_options = KMeanOptions(
+            km_init="random", tolerance=0.001, fitting="ELBOW"
+        )
         km = KMeans(pixels, K=1, options=kmeans_options)
         km.find_bestK(5)
         km.fit()
@@ -143,7 +161,6 @@ def Retrieval_by_shape(llista_imatges, etiquetes, query, neighbours=None, k=5):
         print(f"No s'han trobat imatges del tipus: {query}")
 
     return resultat
-
 
     # Passem les imatges en gris pel init del KNN. Si les passesim a color cada imatge ocuparia 60x80x3=14400 pixels en comptes de 60x80=4800
 

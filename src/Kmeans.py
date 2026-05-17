@@ -1,32 +1,21 @@
 __authors__ = ["1748951", "1755033", "1703660"]
 __group__ = "11"
 
-from dataclasses import dataclass
-import sys
-from typing import Optional
 import numpy as np
-import utils
 
-
-@dataclass
-class KMeanOptions:
-    km_init: str = "first"
-    verbose: bool = False
-    tolerance: float = 0.0
-    max_iter: int = sys.maxsize  # Big number aka no max iters
-    fitting: str = "WCD"
-    best_k_tolerance: float = 0.2
-
-    def __post_init__(self):
-        if not (0 < self.best_k_tolerance <= 1):
-            raise ValueError(
-                f"best_k_tolerance must be between 0 and 1 (got {self.best_k_tolerance})"
-            )
+from .utils import get_color_prob, colors
 
 
 class KMeans:
     def __init__(
-        self, X: np.ndarray, K: int = 1, options: Optional[KMeanOptions] = None
+        self,
+        X: np.ndarray,
+        K: int = 1,
+        km_init: str = "first",
+        tolerance: float = 0.0,
+        max_iter: int = 300,
+        fitting: str = "WCD",
+        best_k_tolerance: float = 0.2,
     ):
         """
         Constructor of KMeans class
@@ -37,7 +26,17 @@ class KMeans:
         self.num_iter = 0
         self.K: int = K
         self._init_X(X)
-        self.options: KMeanOptions = options or KMeanOptions()
+
+        self.km_init = km_init.lower()
+        self.tolerance = tolerance
+        self.max_iter = max_iter
+        self.fitting = fitting.upper()
+        self.best_k_tolerance = best_k_tolerance
+
+        if not (0 < self.best_k_tolerance <= 1):
+            raise ValueError(
+                f"best_k_tolerance must be between 0 and 1 (got {self.best_k_tolerance})"
+            )
 
     #############################################################
     ##  THIS FUNCTION CAN BE MODIFIED FROM THIS POINT, if needed
@@ -110,12 +109,7 @@ class KMeans:
         """
         Initialization of centroids
         """
-
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        init_method = self.options.km_init
+        init_method = self.km_init
         match init_method.lower():
             case "first":
                 self.centroids = self._first_centroids()
@@ -132,10 +126,6 @@ class KMeans:
         """
         Calculates the closest centroid of all points in X and assigns each point to the closest centroid
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
         distances = distance(self.X, self.centroids)
         self.labels = np.argmin(distances, axis=1)
 
@@ -143,10 +133,6 @@ class KMeans:
         """
         Calculates coordinates of centroids based on the coordinates of all the points assigned to the centroid
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
         self.old_centroids = np.copy(self.centroids)
         new_centroids = np.zeros((self.K, self.X.shape[1]))
 
@@ -163,25 +149,17 @@ class KMeans:
         """
         Checks if there is a difference between current and old centroids
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        if self.num_iter >= self.options.max_iter:
+        if self.num_iter >= self.max_iter:
             return True
 
         diff = np.abs(self.centroids - self.old_centroids)
-        return np.all(diff <= self.options.tolerance)
+        return np.all(diff <= self.tolerance)
 
     def fit(self):
         """
         Runs K-Means algorithm until it converges or until the number of iterations is smaller
         than the maximum number of iterations.
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
         self._init_centroids()
         self.num_iter = 0
 
@@ -252,8 +230,8 @@ class KMeans:
         Sets the best K by analysing results up to 'max_K' clusters.
         Supports three fitting heuristics: 'WCD', 'ICD', 'FISHER'.
         """
-        tolerance = self.options.best_k_tolerance
-        fitting = self.options.fitting.upper()
+        tolerance = self.best_k_tolerance
+        fitting = self.fitting.upper()
 
         last_metric = None
 
@@ -392,6 +370,6 @@ def get_colors(centroids: np.ndarray):
     ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
     ##  AND CHANGE FOR YOUR OWN CODE
     #########################################################
-    probs = utils.get_color_prob(centroids)
+    probs = get_color_prob(centroids)
     idxs = np.argmax(probs, axis=1)
-    return utils.colors[idxs]
+    return colors[idxs]

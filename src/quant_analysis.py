@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import time
-from Kmeans import KMeans
+from .Kmeans import KMeans
 
 
 def kmeans_stats(imgs: np.ndarray, Kmax):

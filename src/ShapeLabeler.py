@@ -3,6 +3,7 @@ import numpy as np
 from .KNN import KNN, DistanceMetric, EUCLIDEAN_METRIC
 from dataclasses import dataclass
 
+
 @dataclass
 class ShapeLabelerOptions:
     reduce_train_set: bool = False
