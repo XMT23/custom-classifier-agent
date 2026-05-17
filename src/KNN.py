@@ -15,7 +15,10 @@ COSINE_METRIC: DistanceMetric = lambda x, y: cdist(x, y, "cosine")
 
 class KNN:
     def __init__(
-        self, train_data: np.ndarray, labels: np.ndarray, distance_fn: DistanceMetric
+        self,
+        train_data: np.ndarray,
+        labels: np.ndarray,
+        distance_fn: DistanceMetric = EUCLIDEAN_METRIC,
     ):
         self._init_train(train_data)
         self.distance_fn = distance_fn

@@ -1,9 +1,8 @@
 import pickle
 import unittest
 import numpy as np
-from Kmeans import __authors__, __group__, KMeans, distance, get_colors
-from utils import *
 
+from src import __authors__, __group__, KMeans, distance, get_colors
 
 class TestCases(unittest.TestCase):
 

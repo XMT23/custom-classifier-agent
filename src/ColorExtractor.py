@@ -44,12 +44,13 @@ class ColorExtractor:
     ) -> Union[List[str], List[List[str]]]:
         arr = None
         if self._options.use_cropped_images:
-            print("ALERT! 'use_cropped_images' option is set to true, "
-                  "all the database will be used")
+            print(
+                "ALERT! 'use_cropped_images' option is set to true, "
+                "all the database will be used"
+            )
             arr = self._crop_images()
         else:
             arr = np.array(data, dtype=float)
-
 
         is_individual = arr.ndim == 3
         if is_individual:

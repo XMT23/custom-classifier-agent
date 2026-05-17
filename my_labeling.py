@@ -30,8 +30,9 @@ if __name__ == "__main__":
     color_extractor = ColorExtractor(opts)
     colors_database = color_extractor.extract_dominant_colors()
     imgs, class_labels, color_labels, upper, lower, background = read_extended_dataset(
-        root_folder="./data/raw/images", extended_gt_json="./data/raw/images/gt_reduced.json"
-            )
+        root_folder="./data/raw/images",
+        extended_gt_json="./data/raw/images/gt_reduced.json",
+    )
 
     for i, colors in enumerate(colors_database):
         print(f"Colors extracted: {colors} - ground truth: {test_color_labels[i]}")
