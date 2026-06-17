@@ -17,7 +17,7 @@ class ShapeLabeler:
         self,
         train_imgs: np.ndarray,
         train_labels: list | np.ndarray,
-        options: ShapeLabelerOptions | None,
+        options: ShapeLabelerOptions | None = None,
     ) -> None:
         """
         train_imgs must be a 4-dimensiolan matrix (P x H x W x 3):

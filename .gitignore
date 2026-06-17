@@ -5,3 +5,4 @@ venv/
 doc-guidelines/
 data/
 test/
+answers_exam.py
